@@ -6,16 +6,16 @@
 
 struct vec3
 {
-	float x;
-	float y;
-	float z;
+	double x;
+	double y;
+	double z;
 };
 
 struct color
 {
-        float x;
-        float y;
-        float z;
+        double x;
+        double y;
+        double z;
 };
 
 struct ray
@@ -30,7 +30,7 @@ void putpixel(int x, int y, unsigned char *rgb, int pitch);
 void save_bmp(int width, int height, const char *name);
 void toyviewer(int width, int height);
 
-struct vec3 vec3(float x, float y, float z){
+struct vec3 vec3(double x, double y, double z){
 	struct vec3 v;
 	v.x = x;
 	v.y = y;
@@ -39,20 +39,20 @@ struct vec3 vec3(float x, float y, float z){
 }
 
 // norma
-float length_squared(struct vec3 *v){
-      	float x = (v->x*v->x)+(v->y*v->y)+(v->z*v->z);
+double length_squared(struct vec3 *v){
+      	double x = (v->x*v->x)+(v->y*v->y)+(v->z*v->z);
 	return x;
 }
 
-float length(struct vec3 *v){
-	float x = length_squared(v);
+double length(struct vec3 *v){
+	double x = length_squared(v);
 	x = sqrt(x);
 	return x;
 }
 
 
 // operações
-struct vec3 divec3(struct vec3 *v, float t){
+struct vec3 divec3(struct vec3 *v, double t){
 	struct vec3 r;
 	r.x = v->x*(1.0/t);
 	r.y = v->y*(1.0/t);
@@ -60,7 +60,7 @@ struct vec3 divec3(struct vec3 *v, float t){
 	return r;
 }
 
-struct vec3 mulvec3(struct vec3 *v, float t){
+struct vec3 mulvec3(struct vec3 *v, double t){
         struct vec3 r;
         r.x = v->x*t;
         r.y = v->y*t;
@@ -87,8 +87,8 @@ struct vec3 subvec3(struct vec3 *u, struct vec3 *v){
 
 
 // produto escalar
-float dot(struct vec3 *u, struct vec3 *v){
-	float r = (u->x*v->x);
+double dot(struct vec3 *u, struct vec3 *v){
+	double r = (u->x*v->x);
 	r += (u->y*v->y);
 	r += (u->z*v->z);
 	return r;
@@ -108,31 +108,29 @@ struct ray ray(struct vec3 *orig, struct vec3 *dir){
 	return r;
 }
 
-struct vec3 at(float t, struct ray *r){
+struct vec3 rayat(double t, struct ray *r){
 	struct vec3 v;
 	v = mulvec3(&r->direction, t);
 	v = sumvec3(&r->origin, &v);
 	return v;
 }
 
-float hit_sphere(struct vec3 *center, float radius, struct ray *r){
+double hit_sphere(struct vec3 *center, double radius, struct ray *r){
         struct vec3 oc = subvec3(&r->origin, center);
-        float a = length_squared(&r->direction);
-        float b = dot(&oc, &r->direction);
-        float c = length_squared(&oc) - radius*radius;
-        float discriminant = b*b - a*c;
+        double a = length_squared(&r->direction);
+        double b = dot(&oc, &r->direction);
+        double c = length_squared(&oc) - radius*radius;
+        double discriminant = b*b - a*c;
         if (discriminant < 0) {
         	return -1.0;
     	} else {
-
-		printf("%.2f ",b);
-        	float x = (-b - sqrt(discriminant) ) / a;
+        	double x = (- b - sqrt(discriminant))/ a;
 		if(x < 0.0) x = x*-1.0;
 		return x;
     	}
 }
 
-struct color color(float x, float y, float z){
+struct color color(double x, double y, double z){
 	struct color c;
 	c.x = x;
 	c.y = y;
@@ -140,7 +138,7 @@ struct color color(float x, float y, float z){
 	return c;
 }
 
-struct color mulcolor(struct color *u, float t){
+struct color mulcolor(struct color *u, double t){
 	struct color c;
 	c.x = u->x*t;
         c.y = u->y*t;
@@ -159,9 +157,9 @@ struct color sumcolor(struct color *u, struct color *v){
 struct color ray_color(struct ray *r) {
 
 	struct vec3 center =vec3(0.0, 0.0, -1.0);
-	float t = hit_sphere(&center, 0.5, r);
+	double t = hit_sphere(&center, 0.5, r);
 	if (t > 0){
-		struct vec3 u = at(t, r);
+		struct vec3 u = rayat(t, r);
 		struct vec3 v = subvec3(&u, &center);
 		struct vec3 n = unitvector(&v);
 		struct color c =color(n.x+1.0,n.y+1.0,n.z+1.0);
@@ -172,7 +170,7 @@ struct color ray_color(struct ray *r) {
     	struct vec3 unit_direction = unitvector(&r->direction);
     	t = 0.5*(unit_direction.y + 1.0);
 	struct color a = color(1.0, 1.0, 1.0);
-	a = mulcolor(&a, (float)1.0-t);
+	a = mulcolor(&a, (double)1.0-t);
 	struct color b = color(0.5, 0.7, 1.0);
 	b = mulcolor(&b, t);
 
@@ -195,14 +193,14 @@ int main(){
 	memset(frontbuffer, 0, 0x400000);
 
 	// Image
-	const float aspect_ratio = 16.0 / 9.0;
+	const double aspect_ratio = 16.0 / 9.0;
     	const int image_width = 400;
     	const int image_height = (const int)(image_width / aspect_ratio);
 
 	// Camera
-	float viewport_height = 2.0;
-	float viewport_width = aspect_ratio * viewport_height;
-	float focal_length = 1.0;
+	double viewport_height = 2.0;
+	double viewport_width = aspect_ratio * viewport_height;
+	double focal_length = 1.0;
 
 	struct vec3 origin = vec3(0.0, 0.0, 0.0);
 	struct vec3 horizontal = vec3(viewport_width, 0.0, 0.0);
@@ -222,8 +220,8 @@ int main(){
 	for (int j = image_height-1; j >= 0; --j) {
 
         	for (int i = 0; i < image_width; ++i) {
-            		float u = (float)i / (image_width-1);
-            		float v = (float)j / (image_height-1);
+            		double u = (double)i / (image_width-1);
+            		double v = (double)j / (image_height-1);
 			vector1 = mulvec3(&horizontal, u);
 			vector1 = sumvec3(&lower_left_corner, &vector1);
 			vector2 = mulvec3(&vertical, v);
@@ -248,9 +246,9 @@ void toyviewer(int width, int height){
                 for(int i=0; i < width; i++){
                         unsigned char rgb[4];
 
-                        float r = (float)i /(width-1);
-                        float g = (float)z /(height-1);
-                        float b = 0.25;
+                        double r = (double)i /(width-1);
+                        double g = (double)z /(height-1);
+                        double b = 0.25;
                         rgb[0] = (unsigned char)(255.999 * b);
                         rgb[1] = (unsigned char)(255.999 * g);
                         rgb[2] = (unsigned char)(255.999 * r);
